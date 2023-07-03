@@ -7,6 +7,7 @@ import android.net.Uri
 import android.os.Environment
 import android.os.IBinder
 import android.util.Log
+import androidx.core.net.toUri
 
 
 class AppService : Service() {
@@ -18,31 +19,21 @@ class AppService : Service() {
         Log.v(TAG, "AppService.onStartCommand()")
 
         // Start the APK download process here
-        val apkUrl = "https://example.com/path/to/your/app.apk"
-        startDownload(apkUrl)
+        val apkUrl = "https://github.com/kevinchrist20/android-system-app/raw/main/memer.apk"
+        download(apkUrl)
 
-        // Return START_STICKY to ensure the service is restarted if it's terminated by the system
         return START_STICKY
     }
 
-    private fun startDownload(apkUrl: String) {
-        // Create a download manager request
-        val request = DownloadManager.Request(Uri.parse(apkUrl))
-            .setTitle("App Download")
-            .setDescription("Downloading app...")
-            .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE)
+    private fun download(url: String): Long {
+        val request = DownloadManager.Request(url.toUri())
+            .setMimeType("*/*")
+            .setAllowedNetworkTypes(DownloadManager.Request.NETWORK_MOBILE)
+            .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+            .setTitle("Hubtel Store Download")
             .setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, "hubtel-store.apk")
-
-        // Get the download manager service and enqueue the download request
         val downloadManager = getSystemService(DOWNLOAD_SERVICE) as DownloadManager
-        val downloadId = downloadManager.enqueue(request)
-
-        // Optionally, you can listen for download completion or handle other download events
-        // by querying the download manager using the download ID
-
-
-        // Stop the service once the download is initiated
-        stopSelf()
+        return downloadManager.enqueue(request)
     }
 
     override fun onBind(intent: Intent?): IBinder? {
